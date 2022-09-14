@@ -46,18 +46,30 @@ app.get('/users/:username', (req, res) => {
   });
 })
 
+app.get('/lists', (req, res) => {
+  let response = {}
+  connection.query({
+    sql: 'SELECT * FROM lists L;'
+  }, function(err, rows, fields) {
+    if (err) throw err;
+    response = rows
+    res.json({response: response})
+  });
+})
+
+app.get('/users', (req, res) => {
+  let response = {}
+  connection.query({
+    sql: 'SELECT * FROM users;'
+  }, function(err, rows, fields) {
+    if (err) throw err;
+    response = rows
+    res.json({response: response})
+  });
+})
+
 app.get('/users/:username/lists', (req, res) => {
   let response = {}
-  if (req.params.username === "admin") {
-    connection.query({
-      sql: 'SELECT L.id, L.text FROM lists L;'
-    }, function(err, rows, fields) {
-      if (err) throw err;
-      response = rows
-      res.json({response: response})
-    });
-    return;
-  }
   connection.query({
     sql: 'SELECT L.id, L.text FROM lists L JOIN users U ON L.user_id = U.id where U.username = ?',
     values: [req.params.username]

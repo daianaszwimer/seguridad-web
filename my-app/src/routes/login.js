@@ -41,8 +41,6 @@ export default function Login() {
       });
   }
 
-  // todo: mostrar un select con usuarios y guardar el elemento a ese usuario
-
   return <div>
     <h1>Login</h1>
     <form onSubmit={onSubmit}>
