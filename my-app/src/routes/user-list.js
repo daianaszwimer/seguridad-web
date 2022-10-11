@@ -20,6 +20,7 @@ export default function UserList() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: "include"
       });
       return response.json();
     }
@@ -43,7 +44,8 @@ export default function UserList() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({text})
+        body: JSON.stringify({text}),
+        credentials: "include"
       });
       return response.json();
     }
@@ -52,7 +54,8 @@ export default function UserList() {
       .then(data => {
         setList([...list, text])
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log("fallo", error, error.status);
       });
   }
 
@@ -63,7 +66,9 @@ export default function UserList() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({text})
+        body: JSON.stringify({text}),
+        credentials: "include"
+
       });
       return response.json();
     }

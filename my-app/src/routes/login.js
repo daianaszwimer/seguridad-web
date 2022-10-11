@@ -7,7 +7,7 @@ export default function Login() {
   let [username, setUsername] = useState("");
   let [password, setPassword] = useState("");
   let [error, setError] = useState("");
-  const [cookie, setCookie] = useCookies(['username'])
+  const [cookie, _] = useCookies(['username'])
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,24 +21,29 @@ export default function Login() {
   function onSubmit(event) {
     event.preventDefault()
     async function postData(url = '', data = {}) {
+      try {
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({username, password: md5(password)})
+        body: JSON.stringify({username, password: md5(password)}),
+        credentials: "include"
       });
       return response.json();
+      } catch (error) {
+       throw error;
+      }
     }
     setError("");
     postData('http://localhost:3000/login')
       .then(data => {
-        let expires = new Date()
-        expires.setTime(expires.getTime() + (600 * 1000))
-        setCookie('username', data.response.username, { expires})
+
       })
       .catch((error) => {
         console.log(error);
+        console.log(error.status);
         setError("El usuario/contraseña es incorrecto")
       });
   }

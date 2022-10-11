@@ -21,6 +21,7 @@ export default function Admin() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: "include"
       });
       return response.json();
     }
@@ -44,7 +45,9 @@ export default function Admin() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({text})
+        body: JSON.stringify({text}),
+        credentials: "include"
+
       });
       return response.json();
     }
@@ -64,6 +67,7 @@ export default function Admin() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: "include",
         body: JSON.stringify({text})
       });
       return response.json();

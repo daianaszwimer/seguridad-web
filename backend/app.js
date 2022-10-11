@@ -3,6 +3,7 @@ const app = express()
 app.use(express.json())
 const port = 3000
 const mysql = require('mysql');
+const util = require('util');
 const connection = mysql.createConnection({
   host : 'localhost',
   user : 'root',
@@ -11,6 +12,11 @@ const connection = mysql.createConnection({
   database: "seguridad-web",
   multipleStatements: true
 });
+const query = util.promisify(connection.query).bind(connection);
+
+let cookie_parser=require('cookie-parser')
+
+app.use(cookie_parser())
 
 app.use(function (req, res, next) {
 
@@ -85,22 +91,43 @@ app.get('/users/:username/lists', (req, res) => {
   });
 })
 
-app.post('/users/:username/lists', (req, res) => {
-  let response = {}
-  //INSERT INTO lists (text, user_id) VALUES ("tex222to", 2);
-  connection.query({
-    sql: 'SELECT id from `users` where `username` = ?',
-    values: [req.params.username]
-  }, function(err, rows, fields) {
-    if (err) throw err;
-    response = rows[0]
+app.post('/users/:username/lists', async (req, res) => {
+  let user = req.cookies?.username
+  // validacion
+  if (!user) {
+    res.status(400).json({ response: "No estas logueado" });
+    return;
+  }
+  if (user !== req.params.username) {
+    let rows = await  query({
+      sql: 'SELECT rol from `users` where `username` = ?',
+      values: [user]
+    });
+    let response = rows[0]
     if (!response) {
       res.status(404).json({ response: "No existe el usuario" });
+
       return;
     }
-    connection.query("INSERT INTO lists (text, user_id) VALUES ('"+ req.body.text + "', "+response.id+");");
-    res.json({})
+    if (response.rol !== "rol2") {
+      res.status(401).json({ response: "No tenes acceso" });
+      return;
+    }
+  }
+
+  let rows = await  query({
+    sql: 'SELECT id from `users` where `username` = ?',
+    values: [req.params.username]
   });
+  let response = rows[0]
+  if (!response) {
+    res.status(404).json({ response: "No existe el usuario" });
+    return;
+  }
+
+  await query("INSERT INTO lists (text, user_id) VALUES ('"+ req.body.text + "', "+response.id+");");
+  res.json({})
+
 })
 
 app.delete('/users/:username/lists/:id', (req, res) => {
@@ -134,20 +161,26 @@ app.delete('/users/:username/lists/:id', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-  console.log(req.body);
+  console.log(req.body, req.cookies);
+  let isLoggedIn = req.cookies?.username
   let response = {}
-  connection.query({
-    sql: 'SELECT * from `users` where `username` = ? and `password` = ?',
-    values: [req.body.username, req.body.password]
-  }, function(err, rows, fields) {
-    if (err) throw err;
-    response = rows[0]
-    if (!response) {
-      res.status(404).json({ response: "No existe usuario/contraseña" });
-    } else {
-      res.json({response})
-    }
-  });
+  if (isLoggedIn) {
+    res.status(406).json({ response: "Ya hay un usuario logueado" });
+  } else {
+    connection.query({
+      sql: 'SELECT * from `users` where `username` = ? and `password` = ?',
+      values: [req.body.username, req.body.password]
+    }, function(err, rows, fields) {
+      if (err) throw err;
+      response = rows[0]
+      if (!response) {
+        res.status(404).json({ response: "No existe usuario/contraseña" });
+      } else {
+        res.cookie('username', req.body.username /*, {signed: true}*/)
+        res.json({response})
+      }
+    });
+  }
 })
 
 app.listen(port, () => {
