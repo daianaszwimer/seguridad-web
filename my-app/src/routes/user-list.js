@@ -1,6 +1,7 @@
 import {useCookies} from "react-cookie";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
+
 // <img src="foo" onerror="(() => alert('foo'))()" />
 export default function UserList() {
   const [cookie, _, removeCookie] = useCookies(['username'])
@@ -55,6 +56,26 @@ export default function UserList() {
       });
   }
 
+  function deleteElement(id) {
+    async function deleteData(url = '', data = {}) {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({text})
+      });
+      return response.json();
+    }
+    setText("");
+    deleteData(`http://localhost:3000/users/${cookie.username}/lists/${id}`)
+      .then(data => {
+        navigate(0);
+      })
+      .catch(() => {
+      });
+  }
+
   return <div>
     <button onClick={() => {
       removeCookie("username")
@@ -67,9 +88,13 @@ export default function UserList() {
       <button>Crear</button>
     </form>
     <ul>
-      {list.map(item => <li key={item.text}>
-        <p dangerouslySetInnerHTML={{__html: item.text}}></p>
-      </li>)}
+      {list.map(item => <li key={item.id} style={{ marginTop: "10px"}}>
+        <div style={{display: "flex"}}>
+          <p dangerouslySetInnerHTML={{__html: item.text}}></p>
+          <button style={{marginLeft: "10px"}} onClick={() => deleteElement(item.id)}>Eliminar</button>
+        </div>
+      </li>
+      )}
     </ul>
   </div>
 }

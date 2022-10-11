@@ -8,7 +8,8 @@ const connection = mysql.createConnection({
   user : 'root',
   password : 'asdf1234',
   port: "3306",
-  database: "seguridad-web"
+  database: "seguridad-web",
+  multipleStatements: true
 });
 
 app.use(function (req, res, next) {
@@ -97,10 +98,7 @@ app.post('/users/:username/lists', (req, res) => {
       res.status(404).json({ response: "No existe el usuario" });
       return;
     }
-    connection.query({
-      sql: 'INSERT INTO lists (text, user_id) VALUES (?, ?);',
-      values: [req.body.text, response.id]
-    });
+    connection.query("INSERT INTO lists (text, user_id) VALUES ('"+ req.body.text + "', "+response.id+");");
     res.json({})
   });
 })

@@ -57,6 +57,26 @@ export default function Admin() {
       });
   }
 
+  function deleteElement(id, userId) {
+    async function deleteData(url = '', data = {}) {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({text})
+      });
+      return response.json();
+    }
+    setText("");
+    deleteData(`http://localhost:3000/users/${userId}/lists/${id}`)
+      .then(data => {
+        navigate(0);
+      })
+      .catch(() => {
+      });
+  }
+
   return <div>
     <button onClick={() => {
       removeCookie("username")
@@ -72,8 +92,16 @@ export default function Admin() {
       <button>Crear</button>
     </form>
     <ul>
-      {list.map((item, index) => <li key={`${item.text}-${index}`}>
-        <p dangerouslySetInnerHTML={{__html: item.text}}></p>
+      {users.map(user => <li key={user.id}>
+        <p>{user.name}</p>
+        <ul>
+          {list.filter(item => item.user_id === user.id).map((item, index) => <li key={item.id}>
+            <div style={{display: "flex"}}>
+              <p dangerouslySetInnerHTML={{__html: item.text}}></p>
+              <button style={{marginLeft: "10px"}} onClick={() => deleteElement(item.id, user.id)}>Eliminar</button>
+            </div>
+          </li>)}
+        </ul>
       </li>)}
     </ul>
   </div>

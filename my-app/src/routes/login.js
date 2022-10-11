@@ -18,7 +18,8 @@ export default function Login() {
     navigate(`/lists`)
   }, [cookie.username])
 
-  function onSubmit() {
+  function onSubmit(event) {
+    event.preventDefault()
     async function postData(url = '', data = {}) {
       const response = await fetch(url, {
         method: 'POST',
@@ -34,16 +35,17 @@ export default function Login() {
       .then(data => {
         let expires = new Date()
         expires.setTime(expires.getTime() + (600 * 1000))
-        setCookie('username', data.response.username, { path: '/',  expires})
+        setCookie('username', data.response.username, { expires})
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log(error);
         setError("El usuario/contraseña es incorrecto")
       });
   }
 
   return <div>
     <h1>Login</h1>
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} method="POST">
       {error && <p>{error}</p>}
       <label>Usuario: <input type="text" value={username} onChange={(event) => setUsername(event.target.value)} name="username"/></label>
       <label>Contraseña: <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} name="password"/></label>
