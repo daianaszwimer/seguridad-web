@@ -28,7 +28,7 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({username, password: md5(password)}),
+        body: JSON.stringify({username, password: password/*md5(password)*/}),
         credentials: "include"
       });
       return response.json();
@@ -39,7 +39,7 @@ export default function Login() {
     setError("");
     postData('http://localhost:3000/login')
       .then(data => {
-
+        console.log(data)
       })
       .catch((error) => {
         console.log(error);

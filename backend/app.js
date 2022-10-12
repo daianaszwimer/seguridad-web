@@ -37,7 +37,15 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get('/users/:username', (req, res) => {
+app.get('/users/:username', async (req, res) => {
+
+  let validation = await validateRequest(req);
+
+  if (!validation.success) {
+    res.status(validation.statusCode).json({ response: validation.response });
+    return;
+  }
+
   let response = {}
   connection.query({
     sql: 'SELECT * from `users` where `username` = ?',
@@ -53,7 +61,15 @@ app.get('/users/:username', (req, res) => {
   });
 })
 
-app.get('/lists', (req, res) => {
+app.get('/lists', async (req, res) => {
+  
+  let validation = await validateRequest(req);
+
+  if (!validation.success) {
+    res.status(validation.statusCode).json({ response: validation.response });
+    return;
+  }
+  
   let response = {}
   connection.query({
     sql: 'SELECT * FROM lists L;'
@@ -64,7 +80,15 @@ app.get('/lists', (req, res) => {
   });
 })
 
-app.get('/users', (req, res) => {
+app.get('/users', async (req, res) => {
+
+  let validation = await validateRequest(req);
+
+  if (!validation.success) {
+    res.status(validation.statusCode).json({ response: validation.response });
+    return;
+  }
+
   let response = {}
   connection.query({
     sql: 'SELECT * FROM users;'
@@ -75,7 +99,15 @@ app.get('/users', (req, res) => {
   });
 })
 
-app.get('/users/:username/lists', (req, res) => {
+app.get('/users/:username/lists', async (req, res) => {
+
+  let validation = await validateRequest(req);
+
+  if (!validation.success) {
+    res.status(validation.statusCode).json({ response: validation.response });
+    return;
+  }
+
   let response = {}
   connection.query({
     sql: 'SELECT L.id, L.text FROM lists L JOIN users U ON L.user_id = U.id where U.username = ?',
@@ -92,27 +124,12 @@ app.get('/users/:username/lists', (req, res) => {
 })
 
 app.post('/users/:username/lists', async (req, res) => {
-  let user = req.cookies?.username
-  // validacion
-  if (!user) {
-    res.status(400).json({ response: "No estas logueado" });
-    return;
-  }
-  if (user !== req.params.username) {
-    let rows = await  query({
-      sql: 'SELECT rol from `users` where `username` = ?',
-      values: [user]
-    });
-    let response = rows[0]
-    if (!response) {
-      res.status(404).json({ response: "No existe el usuario" });
 
-      return;
-    }
-    if (response.rol !== "rol2") {
-      res.status(401).json({ response: "No tenes acceso" });
-      return;
-    }
+  let validation = await validateRequest(req);
+
+  if (!validation.success) {
+    res.status(validation.statusCode).json({ response: validation.response });
+    return;
   }
 
   let rows = await  query({
@@ -130,7 +147,17 @@ app.post('/users/:username/lists', async (req, res) => {
 
 })
 
-app.delete('/users/:username/lists/:id', (req, res) => {
+app.delete('/users/:username/lists/:id', async (req, res) => {
+  
+  let validation = await validateRequest(req);
+
+  console.log(validation)
+
+  if (!validation.success) {
+    res.status(validation.statusCode).json({ response: validation.response });
+    return;
+  }
+  
   let response = {}
   let notFound = "";
   connection.query({
@@ -161,8 +188,10 @@ app.delete('/users/:username/lists/:id', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-  console.log(req.body, req.cookies);
+
   let isLoggedIn = req.cookies?.username
+  
+  console.log("isLoggedIn ", isLoggedIn)
   let response = {}
   if (isLoggedIn) {
     res.status(406).json({ response: "Ya hay un usuario logueado" });
@@ -173,6 +202,9 @@ app.post('/login', (req, res) => {
     }, function(err, rows, fields) {
       if (err) throw err;
       response = rows[0]
+
+      console.log("response ", response)
+
       if (!response) {
         res.status(404).json({ response: "No existe usuario/contraseña" });
       } else {
@@ -187,3 +219,22 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
+const validateRequest = async (req) => {
+  
+  let user = req.cookies?.username
+
+  // validacion
+  if (!user) return { success: false, statusCode: 400, response: "No estas logueado" };
+  
+  if (user !== req.params.username) {
+    let rows = await query({ sql: 'SELECT rol from `users` where `username` = ?', values: [user] });
+    let response = rows[0]
+    
+    if (!response) return { success: false, statusCode: 404, response: "No existe el usuario" };
+    
+    if (response.rol !== "rol2") return { success: false, statusCode: 401, response: "No tenes acceso" }; 
+  }
+
+  return { success: true };
+  //fin validacion
+}
