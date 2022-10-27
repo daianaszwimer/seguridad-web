@@ -4,30 +4,31 @@ import {useCookies} from "react-cookie";
 import {useNavigate} from "react-router-dom";
 
 export default function Login() {
+  
   let [username, setUsername] = useState("");
   let [password, setPassword] = useState("");
   let [error, setError] = useState("");
-  const [cookie, _] = useCookies(['username'])
+  const [cookie, _] = useCookies(['vulnera2Token'])
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(cookie.username);
-    if (!cookie.username || cookie.username === "undefined") {
+    console.log(cookie.vulnera2Token);
+    if (!cookie.vulnera2Token || cookie.vulnera2Token === "undefined") {
       return;
     }
-    navigate(`/lists`)
-  }, [cookie.username])
+
+    navigate('/lists');
+
+  }, [cookie.vulnera2Token])
 
   function onSubmit(event) {
     event.preventDefault()
+    
     async function postData(url = '', data = {}) {
       try {
-
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({username, password: password/*md5(password)*/}),
         credentials: "include"
       });
@@ -36,10 +37,17 @@ export default function Login() {
        throw error;
       }
     }
+
     setError("");
+    
     postData('http://localhost:3000/login')
       .then(data => {
         console.log(data)
+        if (data.ok) {
+          navigate(`/lists`)
+        } else {
+          setError("El usuario/contraseña es incorrecto")
+        }
       })
       .catch((error) => {
         console.log(error);

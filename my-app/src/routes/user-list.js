@@ -1,19 +1,27 @@
 import {useCookies} from "react-cookie";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
+// import { decode } from "jsonwebtoken";  
+// import { useLocation } from 'react-router-dom';
 
 // <img src="foo" onerror="(() => alert('foo'))()" />
 export default function UserList() {
-  const [cookie, _, removeCookie] = useCookies(['username'])
+
+  const [cookie, _, removeCookie] = useCookies(['vulnera2Token'])
   let [list, setList] = useState([]);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!cookie.username || cookie.username === "undefined") {
+  
+    if (!cookie.vulnera2Token || cookie.vulnera2Token === "undefined") {
       navigate("/login");
     }
+
+    // let decoded = decode(cookie.vulnera2Token);
+    // console.log('decoded', decoded)
+
     async function getData(url = '', data = {}) {
       const response = await fetch(url, {
         method: 'GET',
@@ -24,19 +32,24 @@ export default function UserList() {
       });
       return response.json();
     }
-    getData(`http://localhost:3000/users/${cookie.username}/lists`)
+
+    getData(`http://localhost:3000/users/${"manu"}/lists`)
       .then(data => {
         setList(data.response);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log(err)
       });
-    getData(`http://localhost:3000/users/${cookie.username}`)
+
+    getData(`http://localhost:3000/users/${"manu"}`)
       .then(data => {
-        setName(data.response.name);
+        setName(data.response.username);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log(err)
       });
-  }, [cookie.username])
+  }, [cookie.vulnera2Token])
+
   function onSubmit() {
     async function postData(url = '', data = {}) {
       const response = await fetch(url, {
@@ -49,8 +62,10 @@ export default function UserList() {
       });
       return response.json();
     }
+    
     setText("");
-    postData(`http://localhost:3000/users/${cookie.username}/lists`)
+
+    postData(`http://localhost:3000/users/${"manu"}/lists`)
       .then(data => {
         setList([...list, text])
       })
@@ -73,7 +88,7 @@ export default function UserList() {
       return response.json();
     }
     setText("");
-    deleteData(`http://localhost:3000/users/${cookie.username}/lists/${id}`)
+    deleteData(`http://localhost:3000/users/${"manu"}/lists/${id}`)
       .then(data => {
         navigate(0);
       })
@@ -83,7 +98,7 @@ export default function UserList() {
 
   return <div>
     <button onClick={() => {
-      removeCookie("username")
+      removeCookie("vulnera2Token")
       navigate("/login")
     }}>Logout</button>
     <h1>User List</h1>
