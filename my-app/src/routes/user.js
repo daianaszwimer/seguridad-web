@@ -1,26 +1,23 @@
 import {useCookies} from "react-cookie";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
-// import { decode } from "jsonwebtoken";  
+// import { decode } from "jsonwebtoken";
 // import { useLocation } from 'react-router-dom';
 
 // <img src="foo" onerror="(() => alert('foo'))()" />
-export default function UserList() {
+export default function User() {
 
-  const [cookie, _, removeCookie] = useCookies(['vulnera2Token'])
+  const [cookie, _] = useCookies(['vulnera2Token'])
   let [list, setList] = useState([]);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const navigate = useNavigate();
+  let {username} = useParams();
 
   useEffect(() => {
-  
     if (!cookie.vulnera2Token || cookie.vulnera2Token === "undefined") {
-      navigate("/login");
+      navigate("/");
     }
-
-    // let decoded = decode(cookie.vulnera2Token);
-    // console.log('decoded', decoded)
 
     async function getData(url = '', data = {}) {
       const response = await fetch(url, {
@@ -33,7 +30,7 @@ export default function UserList() {
       return response.json();
     }
 
-    getData(`http://localhost:3000/users/${"manu"}/lists`)
+    getData(`http://localhost:3000/users/${username}/lists`)
       .then(data => {
         setList(data.response);
       })
@@ -41,7 +38,7 @@ export default function UserList() {
         console.log(err)
       });
 
-    getData(`http://localhost:3000/users/${"manu"}`)
+    getData(`http://localhost:3000/users/${username}`)
       .then(data => {
         setName(data.response.username);
       })
@@ -62,10 +59,10 @@ export default function UserList() {
       });
       return response.json();
     }
-    
+
     setText("");
 
-    postData(`http://localhost:3000/users/${"manu"}/lists`)
+    postData(`http://localhost:3000/users/${username}/lists`)
       .then(data => {
         setList([...list, text])
       })
@@ -88,7 +85,7 @@ export default function UserList() {
       return response.json();
     }
     setText("");
-    deleteData(`http://localhost:3000/users/${"manu"}/lists/${id}`)
+    deleteData(`http://localhost:3000/users/${username}/lists/${id}`)
       .then(data => {
         navigate(0);
       })
@@ -97,23 +94,27 @@ export default function UserList() {
   }
 
   return <div>
-    <button onClick={() => {
-      removeCookie("vulnera2Token")
-      navigate("/login")
-    }}>Logout</button>
     <h1>User List</h1>
     <h2>Hola {name}!</h2>
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} style={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "10px"
+    }}>
       <label>Item: <input type="text" value={text} onChange={(event) => setText(event.target.value)} name="text"/></label>
-      <button>Crear</button>
+      <button style={{ width: "fit-content" }}>Crear</button>
     </form>
     <ul>
       {list.map(item => <li key={item.id} style={{ marginTop: "10px"}}>
-        <div style={{display: "flex"}}>
-          <p dangerouslySetInnerHTML={{__html: item.text}}></p>
-          <button style={{marginLeft: "10px"}} onClick={() => deleteElement(item.id)}>Eliminar</button>
-        </div>
-      </li>
+          <div style={{
+            display: "flex",
+            flexDirection: "column"
+          }}>
+            <p dangerouslySetInnerHTML={{__html: item.text}}></p>
+            <button style={{ marginLeft: "10px", width: "fit-content" }} onClick={() => deleteElement(item.id)}>Eliminar</button>
+          </div>
+        </li>
       )}
     </ul>
   </div>

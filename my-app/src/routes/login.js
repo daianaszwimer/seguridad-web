@@ -12,12 +12,31 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(cookie.vulnera2Token);
+    console.log("cookie.vulnera2Token", cookie.vulnera2Token);
     if (!cookie.vulnera2Token || cookie.vulnera2Token === "undefined") {
       return;
     }
 
-    navigate('/lists');
+    async function getData(url = '', data = {}) {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include"
+      });
+      return response.json();
+    }
+
+    getData(`http://localhost:3000/users/current`)
+      .then(data => {
+        if (data.response.username) {
+          navigate(data.response.username);
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+      });
 
   }, [cookie.vulnera2Token])
 
@@ -44,7 +63,7 @@ export default function Login() {
       .then(data => {
         console.log(data)
         if (data.ok) {
-          navigate(`/lists`)
+          navigate(0)
         } else {
           setError("El usuario/contraseña es incorrecto")
         }

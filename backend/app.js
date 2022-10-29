@@ -11,7 +11,7 @@ const jwtSecret = 'vulnera2';
 const connection = mysql.createConnection({
   host : 'localhost',
   user : 'root',
-  // password : 'asdf1234',
+  password : 'asdf1234',
   port: "3306",
   database: "seguridad-web",
   multipleStatements: true
@@ -41,8 +41,37 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.get('/users/current', async (req, res) => {
+
+  // let user = req.cookies?.username
+  var token = req.cookies?.vulnera2Token
+  // console.log(token)
+  let user;
+  try {
+    var decoded = jwt.verify(token, jwtSecret);
+    user = decoded.username
+  } catch {
+    res.status(401).json({ response: "Token invalido" });
+    res.json({});
+  }
+
+  let response = {}
+  connection.query({
+    sql: 'SELECT * from `users` where `username` = ?',
+    values: [user]
+  }, function(err, rows, fields) {
+    if (err) throw err;
+    response = rows[0]
+    if (!response) {
+      res.status(404).json({ response: "No existe el usuario" });
+      return;
+    }
+    res.json({response})
+  });
+})
+
 app.get('/users/:username', async (req, res) => {
-  
+
   let validation = await validateRequest(req);
 
   if (!validation.success) {
@@ -63,7 +92,7 @@ app.get('/users/:username', async (req, res) => {
       res.status(404).json({ response: "No existe el usuario" });
       return;
     }
-    
+
     res.json({response})
   });
 })
@@ -201,6 +230,11 @@ app.delete('/users/:username/lists/:id', async (req, res) => {
     }
     res.json({})
   });
+})
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('vulnera2Token')
+  res.json({});
 })
 
 app.post('/login', (req, res) => {
