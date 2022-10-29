@@ -38,7 +38,7 @@ export default function Login() {
         console.log(err)
       });
 
-  }, [cookie.vulnera2Token])
+  }, [cookie.vulnera2Token, navigate])
 
   function onSubmit(event) {
     event.preventDefault()
@@ -77,11 +77,15 @@ export default function Login() {
 
   return <div>
     <h1>Login</h1>
-    <form onSubmit={onSubmit} method="POST">
+    <form onSubmit={onSubmit} method="POST" style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px"
+    }}>
       {error && <p>{error}</p>}
       <label>Usuario: <input type="text" value={username} onChange={(event) => setUsername(event.target.value)} name="username"/></label>
       <label>Contraseña: <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} name="password"/></label>
-      <button>Login</button>
+      <button style={{width: "fit-content"}}>Login</button>
     </form>
   </div>
 }
